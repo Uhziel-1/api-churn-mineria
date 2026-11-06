@@ -6,8 +6,16 @@ Versión Limpia: Exclusivamente variables de negocio (sin datos de ruido sintét
 
 from contextlib import asynccontextmanager
 from pathlib import Path
+import sys
 import time
 from typing import Dict, Any
+
+# Asegurar que tanto la raíz del proyecto como el directorio app estén en sys.path
+_current_dir = Path(__file__).resolve().parent
+_root_dir = _current_dir.parent
+for d in [str(_current_dir), str(_root_dir)]:
+    if d not in sys.path:
+        sys.path.insert(0, d)
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,22 +23,40 @@ from fastapi.responses import HTMLResponse
 import joblib
 import pandas as pd
 
-from schemas import (
-    ClienteInput,
-    PrediccionOutput,
-    BatchClienteInput,
-    BatchPrediccionOutput,
-    HealthCheckOutput,
-    ModelInfoOutput,
-    TipoContrato,
-    TipoMetodoPago,
-    TipoCiudad,
-)
-from business_logic import (
-    determinar_nivel_riesgo,
-    identificar_factores_clave,
-    sugerir_accion_comercial,
-)
+try:
+    from app.schemas import (
+        ClienteInput,
+        PrediccionOutput,
+        BatchClienteInput,
+        BatchPrediccionOutput,
+        HealthCheckOutput,
+        ModelInfoOutput,
+        TipoContrato,
+        TipoMetodoPago,
+        TipoCiudad,
+    )
+    from app.business_logic import (
+        determinar_nivel_riesgo,
+        identificar_factores_clave,
+        sugerir_accion_comercial,
+    )
+except ImportError:
+    from schemas import (
+        ClienteInput,
+        PrediccionOutput,
+        BatchClienteInput,
+        BatchPrediccionOutput,
+        HealthCheckOutput,
+        ModelInfoOutput,
+        TipoContrato,
+        TipoMetodoPago,
+        TipoCiudad,
+    )
+    from business_logic import (
+        determinar_nivel_riesgo,
+        identificar_factores_clave,
+        sugerir_accion_comercial,
+    )
 
 # Estado global del ciclo de vida
 app_state: Dict[str, Any] = {
@@ -49,6 +75,7 @@ def resolver_ruta_modelo() -> Path:
         base_dir / "models" / "modelo_churn_limpio.joblib",
         base_dir / "modelo_churn_limpio.joblib",
         Path.cwd() / "models" / "modelo_churn_limpio.joblib",
+        Path.cwd() / "app" / "models" / "modelo_churn_limpio.joblib",
         Path.cwd() / "modelo_churn_limpio.joblib",
     ]
     for ruta in candidatos:

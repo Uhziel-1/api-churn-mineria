@@ -4,8 +4,12 @@ Transforma la probabilidad cruda de Scikit-Learn en indicadores accionables
 para la toma de decisiones empresariales (CRM / Retención).
 """
 
-from typing import List, Tuple
-from schemas import ClienteInput, NivelRiesgo
+from typing import List
+
+try:
+    from app.schemas import ClienteInput, NivelRiesgo
+except ImportError:
+    from schemas import ClienteInput, NivelRiesgo
 
 
 def determinar_nivel_riesgo(probabilidad_fuga: float) -> NivelRiesgo:
